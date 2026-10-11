@@ -1,6 +1,6 @@
 # nsync
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/vburenin/nsync.svg)](https://pkg.go.dev/github.com/vburenin/nsync)
+[![Go Reference](https://pkg.go.dev/badge/github.com/apsis-io/nsync.svg)](https://pkg.go.dev/github.com/apsis-io/nsync)
 
 Synchronization primitives for Go: timed and context-aware locks, named locks,
 semaphores, a bounded goroutine executor, and an atomic flag with an optional
@@ -15,7 +15,7 @@ instructions inline; on 386, 32-bit ARM, and WebAssembly, `sync/atomic`
 operations are calls into the runtime's atomic routines.
 
 ```sh
-go get github.com/vburenin/nsync
+go get github.com/apsis-io/nsync
 ```
 
 ## TryMutex

@@ -2,7 +2,7 @@
 
 package nsync
 
-import "github.com/vburenin/nsync/internal/baseline"
+import "github.com/apsis-io/nsync/internal/baseline"
 
 var (
 	newBenchTryMutex         = baseline.NewTryMutex

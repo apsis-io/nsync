@@ -1,4 +1,4 @@
-module github.com/vburenin/nsync
+module github.com/apsis-io/nsync
 
 go 1.27.0
 
