@@ -243,8 +243,10 @@ func (l *lockState) park(w *waiter, q *waitQueue, limit lockWord) acquireResult 
 		switch {
 		case w.granted:
 			// A waiter that did not wait long shows the queue is moving:
-			// let running goroutines take free permits again.
-			if !starved(w.since) {
+			// let running goroutines take free permits again. The starving
+			// bit is checked before the clock: most wakes are not starving,
+			// and a state load is cheaper than the time.Now behind starved.
+			if st := l.state.Load(); st&stateStarving != 0 && !starved(w.since) {
 				l.clear(stateStarving)
 			}
 			return acquired
