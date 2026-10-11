@@ -118,16 +118,46 @@ func (l *lockState) lockContext(ctx context.Context) error {
 }
 
 func (l *lockState) unlock() {
-	if !l.state.CompareAndSwap(stateUnit, 0) {
+	// A wait-free decrement, in the shape Semaphore.Release uses: one Add
+	// instead of a compare-and-swap, which on arm64 replaces the exclusive
+	// load/store retry with a single LDADDAL. Only the holder can decrement
+	// from the held state, so the fast path needs no compare. A queued or
+	// starving word — or a decrement of zero, which wraps negative and sets
+	// the starving bit in the wrapped count — takes the slow path, which
+	// wakes, validates, and panics.
+	if st := l.state.Add(^(stateUnit - 1)); st&(stateQueued|stateStarving|stateNegative) != 0 {
 		l.unlockSlow()
 	}
 }
 
 //go:noinline
 func (l *lockState) unlockSlow() {
-	if !l.releaseSlow(1) {
-		panic("nsync: unlock of unlocked mutex")
+	for {
+		st := l.state.Load()
+		if st&stateNegative == 0 {
+			break
+		}
+
+		// Undo the decrement: this unlock had no permit to release. A
+		// compare-and-swap undoes each unit below zero once, even when a
+		// valid release on its slow path also sees the negative word;
+		// acquirers that saw it queued meanwhile — the permit they wait
+		// for is free again. While another misused unlock is still being
+		// undone, the word stays negative and that one wakes them.
+		if ns := st + stateUnit; l.state.CompareAndSwap(st, ns) {
+			if ns&stateNegative == 0 && ns&(stateQueued|stateStarving) != 0 {
+				l.releaseAdded(1)
+			}
+
+			panic("nsync: unlock of unlocked mutex")
+		}
 	}
+
+	// The decrement is already applied: releaseAdded wakes the waiters the
+	// release owes and hands the permit to a starving queue head. The
+	// retired flag cannot occur on a plain mutex's word — only a NamedMutex
+	// entry is discarded, and its release paths keep using releaseSlow.
+	l.releaseAdded(1)
 }
 
 // tryAcquire takes a free permit unless the queue is starving. Unlike
