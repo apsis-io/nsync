@@ -8,6 +8,8 @@ import (
 // Semaphore limits concurrent acquisitions. Use NewSemaphore to initialize it.
 // A Semaphore must not be copied after first use.
 type Semaphore struct {
+	_ noCopy
+
 	lock  lockState
 	limit lockWord // immutable after construction
 	// gate makes blocked or colliding acquirers take turns, so the permit

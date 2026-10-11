@@ -11,6 +11,8 @@ import (
 // wait for Unlock and return false. Its zero value is ready to use. It must not
 // be copied after first use.
 type OnceMutex struct {
+	_ noCopy
+
 	state atomic.Uint32
 	queue atomic.Pointer[waitQueue]
 }
@@ -125,6 +127,8 @@ func (om *OnceMutex) unlockSlow() {
 // The zero value is ready to use and must not be copied after first use.
 // Keys must be comparable and equal to themselves (NaN keys are unsupported).
 type NamedOnceMutex struct {
+	_ noCopy
+
 	namedOnceIndex
 	_            [(cacheLineSize - unsafe.Sizeof(namedOnceIndex{})%cacheLineSize) % cacheLineSize]byte
 	primaryShard namedOnceShard

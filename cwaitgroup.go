@@ -13,6 +13,8 @@ var ErrAborted = errors.New("nsync: control wait group aborted")
 // Use NewControlWaitGroup to initialize it. A ControlWaitGroup must not be
 // copied after first use.
 type ControlWaitGroup struct {
+	_ noCopy
+
 	// state holds the number of running tasks and flags. Admission and
 	// completion use it alone unless submitters or Wait calls are parked.
 	state atomic.Uintptr

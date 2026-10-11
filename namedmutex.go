@@ -17,6 +17,8 @@ import (
 // retains a bounded number of idle locks: one for the first name it locked,
 // and at most one cached and one spare lock in each of its 64 shards.
 type NamedMutex struct {
+	_ noCopy
+
 	first atomic.Pointer[namedFirst] // never replaced or discarded once set
 	table atomic.Pointer[namedTable]
 }

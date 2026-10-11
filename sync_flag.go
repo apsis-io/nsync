@@ -11,6 +11,8 @@ import (
 // The zero value is unset. A SyncFlag must not be copied after first use.
 // Set and Unset must not be called while the caller holds the embedded mutex.
 type SyncFlag struct {
+	_ noCopy
+
 	sync.Mutex
 	flag atomic.Bool
 }

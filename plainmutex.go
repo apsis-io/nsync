@@ -19,6 +19,8 @@ import (
 // work. Neither type can be copied after first use, which is the standard
 // mutex rule.
 type Mutex struct {
+	_ noCopy
+
 	st lockState
 
 	// The state is padded to its own cache line. A Mutex is typically
